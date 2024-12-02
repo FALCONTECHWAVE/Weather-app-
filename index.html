@@ -1,0 +1,303 @@
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>
+   Weather App
+  </title>
+  <link crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+  <style>
+   body {
+            background-color: #1a1a2e;
+            color: white;
+            font-family: 'Arial', sans-serif;
+        }
+        .weather-card {
+            background-color: #0f3460;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            margin: 20px auto;
+            max-width: 400px;
+        }
+        .weather-icon {
+            width: 100px;
+            margin: 20px auto;
+        }
+        .temp {
+            font-size: 64px;
+            font-weight: bold;
+        }
+        .details {
+            font-size: 18px;
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .details p {
+            flex: 1 1 45%;
+            margin: 10px 0;
+        }
+        .forecast {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .forecast-item {
+            text-align: center;
+            flex: 1 1 30%;
+            margin: 5px;
+        }
+        .forecast-item img {
+            width: 40px;
+        }
+        .forecast-item p {
+            margin: 5px 0;
+        }
+        .header-icons {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .header-icons i {
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .light-mode {
+            background-color: #f0f0f0;
+            color: #000;
+        }
+        .light-mode .weather-card {
+            background-color: #fff;
+        }
+        .search-bar {
+            display: none;
+            margin-bottom: 20px;
+        }
+        .search-bar input {
+            width: calc(100% - 40px);
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+        }
+        .search-bar button {
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            background-color: #0f3460;
+            color: white;
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #888;
+        }
+  </style>
+ </head>
+ <body>
+  <div class="container">
+   <div class="weather-card">
+    <div class="header-icons">
+     <i class="fas fa-bars" id="toggle-search">
+     </i>
+     <i class="fas fa-sun" id="toggle-mode">
+     </i>
+    </div>
+    <div class="search-bar" id="search-bar">
+     <input id="search-input" placeholder="Enter location" type="text"/>
+     <button id="search-button">
+      Search
+     </button>
+    </div>
+    <h2 id="location">
+     Loading...
+    </h2>
+    <p id="date">
+     Today
+    </p>
+    <img alt="Weather icon" class="weather-icon" height="100" id="weather-icon" src="https://storage.googleapis.com/a1aa/image/YdCw1pa4NVKsCJmwidmfcM3KaONVVuEukbpbbdkZY8Zsld7JA.jpg" width="100"/>
+    <div class="temp" id="temperature">
+     --°
+    </div>
+    <p id="condition">
+     Loading...
+    </p>
+    <div class="details">
+     <p>
+      Temp
+      <span id="temp">
+       --°
+      </span>
+     </p>
+     <p>
+      Wind
+      <span id="wind">
+       -- km/h
+      </span>
+     </p>
+     <p>
+      Humidity
+      <span id="humidity">
+       --%
+      </span>
+     </p>
+     <p>
+      Feels Like
+      <span id="feels-like">
+       --°
+      </span>
+     </p>
+     <p>
+      UV Index
+      <span id="uv-index">
+       --
+      </span>
+     </p>
+     <p>
+      Visibility
+      <span id="visibility">
+       -- km
+      </span>
+     </p>
+     <p>
+      Pressure
+      <span id="pressure">
+       -- mb
+      </span>
+     </p>
+     <p>
+      Precipitation
+      <span id="precipitation">
+       -- mm
+      </span>
+     </p>
+     <p>
+      Rain Probability
+      <span id="rain-probability">
+       --%
+      </span>
+     </p>
+     <p>
+      Rain Coming
+      <span id="rain-coming">
+       --
+      </span>
+     </p>
+    </div>
+    <div class="forecast" id="forecast">
+     <!-- Forecast items will be inserted here -->
+    </div>
+   </div>
+   <footer>
+    © 2024 ZENCRIPTS, All Rights Reserved
+   </footer>
+  </div>
+  <script>
+   const apiKey = 'd110c974d6d74c539cb233304243011';
+
+        function fetchWeather(location) {
+            fetch(`https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${location}&days=1`)
+                .then(response => response.json())
+                .then(data => updateWeather(data))
+                .catch(error => console.error('Error fetching weather data:', error));
+        }
+
+        function updateWeather(data) {
+            const location = data.location.name + ', ' + data.location.region;
+            const date = new Date(data.location.localtime).toDateString();
+            const temp = data.current.temp_c;
+            const condition = data.current.condition.text;
+            const icon = data.current.condition.icon;
+            const wind = data.current.wind_kph;
+            const humidity = data.current.humidity;
+            const feelsLike = data.current.feelslike_c;
+            const uvIndex = data.current.uv;
+            const visibility = data.current.vis_km;
+            const pressure = data.current.pressure_mb;
+            const precipitation = data.current.precip_mm;
+            const rainProbability = data.forecast.forecastday[0].day.daily_chance_of_rain;
+            const rainComing = data.forecast.forecastday[0].day.daily_will_it_rain ? 'Yes' : 'No';
+
+            document.getElementById('location').innerText = location;
+            document.getElementById('date').innerText = date;
+            document.getElementById('temperature').innerText = `${temp}°`;
+            document.getElementById('condition').innerText = condition;
+            document.getElementById('weather-icon').src = `https:${icon}`;
+            document.getElementById('temp').innerText = `${temp}°`;
+            document.getElementById('wind').innerText = `${wind} km/h`;
+            document.getElementById('humidity').innerText = `${humidity}%`;
+            document.getElementById('feels-like').innerText = `${feelsLike}°`;
+            document.getElementById('uv-index').innerText = uvIndex;
+            document.getElementById('visibility').innerText = `${visibility} km`;
+            document.getElementById('pressure').innerText = `${pressure} mb`;
+            document.getElementById('precipitation').innerText = `${precipitation} mm`;
+            document.getElementById('rain-probability').innerText = `${rainProbability}%`;
+            document.getElementById('rain-coming').innerText = rainComing;
+
+            const forecast = data.forecast.forecastday[0].hour;
+            const forecastContainer = document.getElementById('forecast');
+            forecastContainer.innerHTML = '';
+
+            forecast.forEach((hour, index) => {
+                if (index % 2 === 0) {
+                    const forecastItem = document.createElement('div');
+                    forecastItem.className = 'forecast-item';
+                    forecastItem.innerHTML = `
+                        <p>${new Date(hour.time).getHours()}:00</p>
+                        <img src="https:${hour.condition.icon}" alt="Weather icon"/>
+                        <p>${hour.temp_c}°</p>
+                    `;
+                    forecastContainer.appendChild(forecastItem);
+                }
+            });
+        }
+
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    fetchWeather(`${lat},${lon}`);
+                }, error => {
+                    console.error('Error getting location:', error);
+                    // Fallback to a default location if geolocation fails
+                    fetchWeather('Toronto');
+                });
+            } else {
+                console.error('Geolocation is not supported by this browser.');
+                // Fallback to a default location if geolocation is not supported
+                fetchWeather('Toronto');
+            }
+        }
+
+        function toggleMode() {
+            document.body.classList.toggle('light-mode');
+            const icon = document.getElementById('toggle-mode');
+            if (document.body.classList.contains('light-mode')) {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            } else {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            }
+        }
+
+        function toggleSearch() {
+            const searchBar = document.getElementById('search-bar');
+            searchBar.style.display = searchBar.style.display === 'none' ? 'block' : 'none';
+        }
+
+        document.getElementById('toggle-mode').addEventListener('click', toggleMode);
+        document.getElementById('toggle-search').addEventListener('click', toggleSearch);
+        document.getElementById('search-button').addEventListener('click', () => {
+            const location = document.getElementById('search-input').value;
+            fetchWeather(location);
+        });
+
+        getLocation();
+  </script>
+ </body>
+</html>
